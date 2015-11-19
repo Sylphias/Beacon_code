@@ -1,12 +1,17 @@
 #include <XBee.h>
 #include <SoftwareSerial.h>
-//#include <string.h>
-//#include <LiquidCrystal.h>
  
-//LiquidCrystal lcd(12,11,5,4,3,2);
  
 // XBee's DOUT (TX) is connected to pin 8 (Arduino's Software RX)
 // XBee's DIN (RX) is connected to pin 9 (Arduino's Software TX)
+
+// Establishing Message Structure
+// Edit This code to change what is sent in payload
+// Message Payload can only contain 256 Bytes, First few of which are reserved for key information
+// 1) Message Type (1,2,3) 1 - broadcast 2 - play help 3 - redirect but dont play
+// 2) Hop Number (In hexadecimal)
+// 4) Message ID
+// Look at CRC Encoding
 SoftwareSerial serial1(0, 1); // RX, TX
 
 XBee xbee=XBee();
@@ -17,7 +22,9 @@ Rx64Response rx64 = Rx64Response();
 uint8_t option = 0;
 uint8_t data = 0;
 uint8_t rssi = 0;
- 
+
+
+
 void setup() 
 {
   Serial.begin(9600);
@@ -27,17 +34,6 @@ void setup()
  
 void loop() 
 {
-  String test_msg = "this is a string message";
-  char payload[64] ;
-  test_msg.toCharArray(payload, test_msg.length());
-//  payload = format_message_payload(1,1,1);
-    uint8_t payload_bytes[64] = {};
-//  for(int char_index = 0 ; char_index < sizeof(payload); char_index++){
-//    payload_bytes[char_index] = payload[char_index];
-//  }
-  memcpy((uint8_t*)payload_bytes,(char*)payload, 64);
-//  Serial.println((char)payload_bytes[1]);
-  Tx16Request tx = Tx16Request(0x0000, payload_bytes, sizeof(payload_bytes));
   xbee.readPacket(100);
   if (xbee.getResponse().isAvailable())
   {
@@ -48,17 +44,28 @@ void loop()
       {
         xbee.getResponse().getRx16Response(rx16);
         rssi = rx16.getRssi();
-
-
         Serial.println(rssi);
-        String ab ;
-        for(int x = 0 ; x< rx16.getDataLength()+1; x++){
-          char y = rx16.getData(x);
-           ab = ab + y;
+        //Convert Unsigned Char to Integers
+        int message_type = (char)rx16.getData(0)-'0';
+        int hop_number = (char)rx16.getData(1)-'0';
+        int message_id = (char)rx16.getData(2)-'0';
+        Serial.println(message_type);
+        // Handling various types of messages 
+        switch(message_type){
+          case 1:
+            format_message_payload(1,hop_number,message_id);
+          break;
+          case 2:
+            //todo
+          break;
+          case 3:
+            //todo
+          break;
+          default:
+            //todo
+          break;
         }
-        Serial.println(ab);
 
-        xbee.send(tx);
       } 
       else 
       {
@@ -70,33 +77,28 @@ void loop()
     }
   }
 }
-// Establishing Message Structure
-// Edit This code to change what is sent in payload
-// Message Payload can only contain 256 Bytes, First few of which are reserved for key information
-// 1) Message Type
-// 2) Hop Number
-// 3) Message ID
 
-//char format_message_payload(char message_type, char hop_number, char message_id)
-//{
-//  char payload[256] ={message_type, hop_number , message_id};
-//  char test_string[256] = 'Help!, Help me! I am trapped!!!';
-//  int i = 3;
-//  for (int x = 0; x < sizeof(test_string); x++){
-//    Serial.print(test_string[x]);
-//    payload[i] = test_string[x];
-//    i = i+1;
-//  }
-//  return payload;
-//}
+void format_message_payload(int message_type, int hop_number, int message_id)
+{
+  String padded_hop_number;
+  hop_number++;
+  if(hop_number < 10)
+  {
+    padded_hop_number = "0"+hop_number;
+  }
+  message_type = 2;
+  message_id = 4;
+  Serial.print("Padded:");
+  Serial.println(hop_number);
+  String composed_message = String(message_type) + String(hop_number) + String(message_id) + "TestPad";
+  char payload[32];
+  Serial.println(composed_message); 
+  composed_message.toCharArray(payload, composed_message.length()+1);
+  Serial.println(payload);
+  uint8_t payload_bytes[32] = {};
+  memcpy((uint8_t*)payload_bytes,(char*)payload, 32);
+  Tx16Request tx = Tx16Request(0x0000, payload_bytes, sizeof(payload_bytes));
+  xbee.send(tx);
 
-
-
-
-
-
-
-
-
-
+}
 
