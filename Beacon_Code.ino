@@ -1,7 +1,6 @@
 #include <XBee.h>
 #include <SoftwareSerial.h>
- 
- 
+
 // XBee's DOUT (TX) is connected to pin 1 (Arduino's Software RX)
 // XBee's DIN (RX) is connected to pin 9 (Arduino's Software TX)
 
@@ -47,7 +46,7 @@ void loop()
   int message_type = 0;
   int hop_number = 0;
   int message_id = 0;
-  String beacon_chain;
+  char beacon_chain[30];
   xbee.readPacket(100);
   if (xbee.getResponse().isAvailable())
   {
@@ -59,45 +58,32 @@ void loop()
         xbee.getResponse().getRx16Response(rx16);
         rssi = rx16.getRssi();
         Serial.println(rssi);
-
-        // This look goes through the packets to extract the various data
-        for(int packet_counter = 0 ; packet_counter < rx16.getDataLength; packet_counter++)
+        String packet_sec;
+        char packet_char[rx16.getDataLength()];
+        // This loop converts the data in to a string for processing
+        for(int packet_counter = 0 ; packet_counter < rx16.getDataLength(); packet_counter++)
         {
-          char packet_sec = (char)rx16.getData(packet_counter)-'0';
-          // Arduino has no regex... have to do it the dirty way
-          // Apparently, there is a function in C called sscanf
-          switch (packet_sec)
-          {
-            case 'M':
-              //if (packet_sec){
-              int m_section_counter = packet_counter;
-              char section_char;
-              do
-              {
-                section_char = (char)rx16.getData(packet_counter)-'0';
-                m_section_counter += 1;
-              }
-              while(section_char != 'H')
-              //}
-            break;
-            case 'H':
-            break;
-            case 'I':
-            break;
-            case 'R':
-            break;
-            case 'E':
-            break;
-          }
-        }
-
-
+          packet_char[packet_counter] = (char)rx16.getData(packet_counter);
+        };
+        //Serial.println(packet_char);
+        // Arduino has no regex... have to do it the dirty way
+        // Apparently, there is a function in C called sscanf
+        // Get this working first, then optimise. (remove the uint ->str ->char array)
+        //packet_sec.toCharArray()
+        //Serial.println(packet_char);
+        sscanf(packet_char, "%d %d %d %s ", &message_type, &hop_number, &message_id, beacon_chain );
+        
         //Convert Unsigned Char to Integers
-        message_type = (char)rx16.getData(0)-'0';
-        hop_number = (char)rx16.getData(1)-'0';
-        message_id = (char)rx16.getData(5)-'0';
-        beacon_chain = String((char) rx16.getData(10)-'0');
-      
+        // message_type = (char)rx16.getData(0)-'0';
+        // hop_number = (char)rx16.getData(1)-'0';
+        // message_id = (char)rx16.getData(5)-'0';
+        // beacon_chain = String((char) rx16.getData(10)-'0');
+        Serial.println(message_type);
+        Serial.println(hop_number);
+        Serial.println(message_id);
+        Serial.println(beacon_chain);
+
+
         // Handling various types of messages 
         // Check if you re-received the previous message
         if(old_message_id != message_id && original_beacon_ID != beacon_chain[1]){
@@ -131,7 +117,7 @@ void loop()
   if(digitalRead(13) == HIGH && beacon_mode == 1)
   {
     digitalWrite(12, HIGH);
-    format_message_payload(message_type,hop_number,message_id, beacon_chain);;
+    format_message_payload(message_type,hop_number,message_id, beacon_chain);
   }
   else
   {
@@ -159,6 +145,9 @@ void format_message_payload(int message_type, int hop_number, int message_id,Str
   xbee.send(tx);
 
 }
+
+
+
 
 
 
