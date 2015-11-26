@@ -47,6 +47,9 @@ void loop()
   int hop_number = 0;
   int message_id = 0;
   char beacon_chain[30];
+  int lastIndex = 0;
+
+
   xbee.readPacket(100);
   if (xbee.getResponse().isAvailable())
   {
@@ -58,31 +61,50 @@ void loop()
         xbee.getResponse().getRx16Response(rx16);
         rssi = rx16.getRssi();
         Serial.println(rssi);
-        String packet_sec;
+        String packet_sec[4];
         char packet_char[rx16.getDataLength()];
+        String packet_input;
+        int counter = 0;
         // This loop converts the data in to a string for processing
         for(int packet_counter = 0 ; packet_counter < rx16.getDataLength(); packet_counter++)
         {
           packet_char[packet_counter] = (char)rx16.getData(packet_counter);
         };
-        //Serial.println(packet_char);
+
         // Arduino has no regex... have to do it the dirty way
         // Apparently, there is a function in C called sscanf
         // Get this working first, then optimise. (remove the uint ->str ->char array)
-        //packet_sec.toCharArray()
-        //Serial.println(packet_char);
-        sscanf(packet_char, "%d %d %d %s ", &message_type, &hop_number, &message_id, beacon_chain );
-        
-        //Convert Unsigned Char to Integers
-        // message_type = (char)rx16.getData(0)-'0';
-        // hop_number = (char)rx16.getData(1)-'0';
-        // message_id = (char)rx16.getData(5)-'0';
-        // beacon_chain = String((char) rx16.getData(10)-'0');
-        Serial.println(message_type);
-        Serial.println(hop_number);
-        Serial.println(message_id);
-        Serial.println(beacon_chain);
 
+        packet_input = packet_char;
+        Serial.println(packet_char);
+        Serial.println(packet_input);
+
+        for (int i = 0; i < packet_input.length(); i++) {
+              // Loop through each character and check if it's a comma
+              if (packet_input.substring(i, i+1) == ",") {
+                // Grab the piece from the last index up to the current position and store it
+                packet_sec[counter] = packet_input.substring(lastIndex, i);
+                // Update the last position and add 1, so it starts from the next character
+                lastIndex = i + 1;
+                // Increase the position in the array that we store into
+                counter++;
+              }
+
+              // If we're at the end of the string (no more commas to stop us)
+              if (i == packet_input.length() - 1) {
+                // Grab the last part of the string from the lastIndex to the end
+                packet_sec[counter] = packet_input.substring(lastIndex, i);
+              }
+            }
+            
+
+        // Clear out string and counters to get ready for the next incoming string
+        counter = 0;
+        lastIndex = 0;
+        for(int n = 0; n < 4; n++)
+        {
+        Serial.println(packet_sec[n]);
+        }
 
         // Handling various types of messages 
         // Check if you re-received the previous message
@@ -145,6 +167,11 @@ void format_message_payload(int message_type, int hop_number, int message_id,Str
   xbee.send(tx);
 
 }
+
+
+
+
+
 
 
 
