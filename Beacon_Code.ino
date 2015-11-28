@@ -12,7 +12,7 @@
   Message Payload can only contain 256 Bytes, First few of which are reserved for key information
   M) Message Type (1,2,3) 1 - broadcast 2 - play help 3 - redirect but dont play
   H) Hop Number (In hexadecimal)
-  I) Message ID (original)
+  I) Message ID 
   R) Receiver Chains (Ie addresses of the chips the message has passed through)
   E) End Packet
   Look at CRC Encoding
@@ -77,13 +77,8 @@ void loop()
           packet_char[packet_counter] = (char)rx16.getData(packet_counter);
         };
 
-        // Arduino has no regex... have to do it the dirty way
-        // Apparently, there is a function in C called sscanf
-        // Get this working first, then optimise. (remove the uint ->str ->char array)
-
+        // This method splits up the packet data based off a comma delimiter, not optimised but time constraints....
         packet_input = packet_char;
-        Serial.println(packet_char);
-        Serial.println(packet_input);
 
         for (int i = 0; i < packet_input.length(); i++) {
               // Loop through each character and check if it's a comma
@@ -95,22 +90,24 @@ void loop()
                 // Increase the position in the array that we store into
                 counter++;
               }
-
               // If we're at the end of the string (no more commas to stop us)
               if (i == packet_input.length() - 1) {
                 // Grab the last part of the string from the lastIndex to the end
                 packet_sec[counter] = packet_input.substring(lastIndex, i);
               }
             }
-            
+        message_type = packet_sec[0].toInt();
+        hop_number = packet_sec[1].toInt();
+        message_id = packet_sec[2].toInt();
+        packet_sec[3].toCharArray(beacon_chain, packet_sec[3].length());  
+        Serial.println(message_type);
+        Serial.println(hop_number);
+        Serial.println(message_id);
+        Serial.println(beacon_chain[1]);
 
         // Clear out string and counters to get ready for the next incoming string
         counter = 0;
         lastIndex = 0;
-        for(int n = 0; n < 4; n++)
-        {
-        Serial.println(packet_sec[n]);
-        }
 
         // Handling various types of messages 
         // Check if you re-received the previous message
@@ -172,6 +169,7 @@ void format_message_payload(int message_type, int hop_number, int message_id,Str
   xbee.send(tx);
 
 }
+
 
 
 
