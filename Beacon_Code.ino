@@ -12,13 +12,15 @@
   Message Payload can only contain 256 Bytes, First few of which are reserved for key information
   M) Message Type (1,2,3) 1 - broadcast 2 - play help 3 - redirect but dont play
   H) Hop Number (In hexadecimal)
-  I) Message ID (originah)
+  I) Message ID (original)
   R) Receiver Chains (Ie addresses of the chips the message has passed through)
   E) End Packet
   Look at CRC Encoding
 */
 SoftwareSerial serial1(0, 1); // RX, TX
 
+
+// Initialize Global Variables
 XBee xbee=XBee();
 XBeeResponse response = XBeeResponse();
 Rx16Response rx16 = Rx16Response();
@@ -46,6 +48,7 @@ void setup()
  
 void loop() 
 {
+  // Initialize Local Variables
   int message_type = 0;
   int hop_number = 0;
   int message_id = 0;
