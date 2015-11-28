@@ -3,17 +3,20 @@
 
 // XBee's DOUT (TX) is connected to pin 1 (Arduino's Software RX)
 // XBee's DIN (RX) is connected to pin 9 (Arduino's Software TX)
+/*
+  This file is for the beacon algorithm and how it handles packets coming in and out of the system
 
-// Establishing Message Structure
-// Edit This code to change what is sent in payload
-// Message Payload can only contain 256 Bytes, First few of which are reserved for key information
-// M) Message Type (1,2,3) 1 - broadcast 2 - play help 3 - redirect but dont play
-// H) Hop Number (In hexadecimal)
-// I) Message ID
-// R) Receiver Chains (Ie addresses of the chips the message has passed through)
-// E) End Packet
-// Look at CRC Encoding
-//
+
+  Establishing Message Structure
+  Edit This code to change what is sent in payload
+  Message Payload can only contain 256 Bytes, First few of which are reserved for key information
+  M) Message Type (1,2,3) 1 - broadcast 2 - play help 3 - redirect but dont play
+  H) Hop Number (In hexadecimal)
+  I) Message ID (originah)
+  R) Receiver Chains (Ie addresses of the chips the message has passed through)
+  E) End Packet
+  Look at CRC Encoding
+*/
 SoftwareSerial serial1(0, 1); // RX, TX
 
 XBee xbee=XBee();
@@ -28,7 +31,7 @@ uint8_t rssi = 0;
 int old_message_id = 0;
 int original_beacon_ID = 0;
 
-//Beacon mode tells us if we're listening for microphone(1), or broadcasting(0)
+//Beacon mode tells us if we're listening for microphone(1), or broadcasting back(2)
 int beacon_mode = 0;
 
 void setup() 
@@ -113,7 +116,15 @@ void loop()
             case 1:
               Serial.println('Test');
               beacon_mode = 1;
-              //format_message_payload(message_type,hop_number,message_id, beacon_chain);
+              if(digitalRead(13) == HIGH && beacon_mode == 1)
+                {
+                  digitalWrite(12, HIGH);
+                  format_message_payload(2,0,message_id, beacon_chain);
+                }
+                else
+                {
+                  digitalWrite(12,LOW);
+              }
             break;
             case 2:
               //todo
@@ -135,15 +146,6 @@ void loop()
         Serial.println(rssi);
       }
     }
-  }
-  if(digitalRead(13) == HIGH && beacon_mode == 1)
-  {
-    digitalWrite(12, HIGH);
-    format_message_payload(message_type,hop_number,message_id, beacon_chain);
-  }
-  else
-  {
-    digitalWrite(12,LOW);
   }
 }
 
