@@ -49,15 +49,7 @@ const int division[] PROGMEM = {
   10,10,10,10,10,10,10,10,10,10,10,10,10,10,10        //196 - 210
 };
 
-//Pin Mapping
-#define frequencyIn   A0
-#define lcdD7         A1
-#define lcdD6         A2
-#define lcdD5         A3 
-#define lcdD4          2
-#define lcdRS          7
-#define lcdEnable      4
-#define lcdBackLt      1
+
 
 
 TMRpcm tmrpcm; 
@@ -153,17 +145,18 @@ void setup()
   ADCSRA |= (1 << ADEN);  //enable ADC
   ADCSRA |= (1 << ADSC);  //start ADC measurements
   sei();//re-enable interrupts
-  
-  
-  Serial.print("\nInitializing SD card...");
+
   pinMode(chipSelect, OUTPUT); 
   digitalWrite(chipSelect, HIGH); // Add this line
 
-
   tmrpcm.speakerPin = 9;
-  
+  if (!SD.begin(chipSelect,cardType)) {
+    Serial.println("initialization failed!");
+    return;
+  }
+  Serial.println("initialization done.");
   root = SD.open("/");
-  delay(2000);;
+//  delay(2000);
   tmrpcm.play("8-16-kg.wav"); //the sound file "music" will play each time the arduino power
 }
 
@@ -179,7 +172,7 @@ void loop()
   char beacon_chain[30];
   int lastIndex = 0;
 
-
+  Serial.println('Reading started');
   xbee.readPacket(100);
   if (xbee.getResponse().isAvailable())
   {
@@ -286,19 +279,9 @@ void run_voice()
                     unsigned long time2 = millis();
                     if( time2 - time1 > 250){
                       time1 = time2;
-//                      lcd.clear();
-//                      lcd.print(calculation_time);  //top left
-//                      lcd.setCursor(5,0);
-//                      lcd.print(int(loudness)); //top middle
-//                      lcd.setCursor(10,0);
-//                      lcd.print(int(sample_array[0])); //a sample at top right
-//                      lcd.setCursor(0,1);
                       float print_this = 19230 / float(last_commit);
-//                      lcd.print(print_this); //frequency on bottom left
                       if(harmonic_detect == true){
                         harmonic_detect = false;
-//                        lcd.setCursor(8,1);
-//                        lcd.print(" H");
                         count++;
                        if(count < maxnum){
                         tmrpcm.play("8-16-hello.wav");
