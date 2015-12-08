@@ -1,8 +1,5 @@
 #include <XBee.h>
 #include <SoftwareSerial.h>
-#include <SPI.h>
-#include <SD.h>
-#include <TMRpcm.h> 
 // XBee's DOUT (TX) is connected to pin 1 (Arduino's Software RX)
 // XBee's DIN (RX) is connected to pin 9 (Arduino's Software TX)
 /*
@@ -22,23 +19,6 @@
 
 */
 
-TMRpcm tmrpcm; 
-char mychar;
-File root;
-File entry;
-
-const int this_beacon = 1;
-const int chipSelect = 10;    
-const int oldCard = SPI_HALF_SPEED;
-const int newCard = SPI_QUARTER_SPEED;
-int cardType = oldCard;
-unsigned long timeDiff = 0;
-unsigned long timePress = 0;
-int  old_sound = 0;
-int sound_delta;
-int is_triggered = false;
-int count = 0;
-int maxnum = 3;
 
 
 
@@ -58,30 +38,17 @@ uint8_t rssi = 0;
 
 int old_message_id = 0;
 int original_beacon_ID = 0;
-
-//Beacon mode tells us if we're listening for microphone(1), or broadcasting back(2)
-int beacon_mode = 0;
+int this_beacon_ID = 0;
 
 void setup() 
 {
   Serial.begin(9600);
   serial1.begin(9600);
   xbee.setSerial(Serial);
-  pinMode(13,INPUT);
-  pinMode(12,OUTPUT);
-  pinMode(8,INPUT);
-  pinMode(chipSelect, OUTPUT); 
-  digitalWrite(chipSelect, HIGH); // Add this line
-
-  tmrpcm.speakerPin = 9;
-  if (!SD.begin(chipSelect,cardType)) {
-    Serial.println("initialization failed!");
-    return;
+  for (int x = 11; x<13; x++){
+    pinMode(x,INPUT);
   }
-  Serial.println("initialization done.");
-  root = SD.open("/");
-//  delay(2000);
-  //tmrpcm.play("8-16-kg.wav"); //the sound file "music" will play each time the arduino power
+
 }
 
 
@@ -142,57 +109,38 @@ void loop()
         // Clear out string and counters to get ready for the next incoming string
         counter = 0;
         lastIndex = 0;
-
-        // Handling various types of messages 
-        // Check if you re-received the previous message
-        if(old_message_id != message_id && original_beacon_ID != beacon_chain[0]){
-          switch(message_type){
-            case 1:
-             beacon_mode = 1;
-             Serial.print('playing');
-             tmrpcm.stopPlayback();
-             tmrpcm.play("8-16-kg.wav"); 
-             format_message_payload(2,0,message_id, beacon_chain);
-            break;
-            case 2:
-             tmrpcm.stopPlayback();
-             tmrpcm.play("JFA.wav");
-            break;
-            case 3:
-             tmrpcm.stopPlayback();
-             tmrpcm.play("8-16-iws.wav");
-            break;
-            default:
-              tmrpcm.stopPlayback();
-            break;
-          }
-        }
       } 
     }
   }
-  if(beacon_mode == 1){
-    microphone_loudness();
-    if(is_triggered)
-    {
-      format_message_payload(2,0,message_id, beacon_chain);
-      delay(200);
-      beacon_mode=0;
-      is_triggered=false;
-    }
+
+
+  if(digitalRead(11) == HIGH){
+    format_message_payload(1,0,message_id);
+    delay(200);
+  }
+  if(digitalRead(12) == HIGH){
+    format_message_payload(3,0,message_id);
+    delay(200);
+  }
+  if(digitalRead(13) == HIGH){
+    format_message_payload(0,0,message_id);
+    delay(200);
   }
 }
 
 //Prepares the outgoing message to be sent
-void format_message_payload(int message_type, int hop_number, int message_id,String beacon_chain)
+void format_message_payload(int message_type, int hop_number, int message_id)
 {
+  String beacon_chain = "";
   String padded_hop_number;
   hop_number++;
   if(hop_number < 10)
   {
     padded_hop_number = "0"+hop_number;
   } 
-  beacon_chain += this_beacon;
+  beacon_chain += this_beacon_ID;
   String composed_message = String(message_type) + String(hop_number) + String(message_id) + beacon_chain;
+  Serial.println(composed_message);
   char payload[32];
   composed_message.toCharArray(payload, composed_message.length()+1);
   Serial.println(payload);
@@ -203,18 +151,6 @@ void format_message_payload(int message_type, int hop_number, int message_id,Str
 
 }
 
-void microphone_loudness()
-{ 
-  analogRead(0);
-  delay(10);
-  int val = analogRead(0);
-  sound_delta = val - old_sound;
-  Serial.println(sound_delta);
-  if(sound_delta > 600){
-    is_triggered = true;
-  }
-  old_sound = val;
-}
 
 
 
