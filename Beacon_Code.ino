@@ -22,14 +22,12 @@
 
 */
 
-
-
 TMRpcm tmrpcm; 
 char mychar;
 File root;
 File entry;
 
-
+const int this_beacon = 1;
 const int chipSelect = 10;    
 const int oldCard = SPI_HALF_SPEED;
 const int newCard = SPI_QUARTER_SPEED;
@@ -69,7 +67,7 @@ void setup()
   xbee.setSerial(Serial);
   pinMode(13,INPUT);
   pinMode(12,OUTPUT);
-
+  pinMode(8,INPUT);
   pinMode(chipSelect, OUTPUT); 
   digitalWrite(chipSelect, HIGH); // Add this line
 
@@ -81,7 +79,7 @@ void setup()
   Serial.println("initialization done.");
   root = SD.open("/");
 //  delay(2000);
-  tmrpcm.play("8-16-kg.wav"); //the sound file "music" will play each time the arduino power
+  //tmrpcm.play("8-16-kg.wav"); //the sound file "music" will play each time the arduino power
 }
 
 
@@ -137,6 +135,7 @@ void loop()
         message_type = packet_sec[0].toInt();
         hop_number = packet_sec[1].toInt();
         message_id = packet_sec[2].toInt();
+        Serial.println(message_type);
         packet_sec[3].toCharArray(beacon_chain, packet_sec[3].length());  
         // Clear out string and counters to get ready for the next incoming string
         counter = 0;
@@ -147,37 +146,32 @@ void loop()
         if(old_message_id != message_id && original_beacon_ID != beacon_chain[1]){
           switch(message_type){
             case 1:
-              Serial.println('Test');
-              beacon_mode = 1;
-              if(digitalRead(13) == HIGH && beacon_mode == 1)
-                {
-                  format_message_payload(2,0,message_id, beacon_chain);
-                }
-                else
-                {
-                  digitalWrite(12,LOW);
-              }
+             beacon_mode = 1;
+             Serial.print('playing');
+             tmrpcm.stopPlayback();
+             tmrpcm.play("8-16-kg.wav"); 
+             format_message_payload(2,0,message_id, beacon_chain);
             break;
             case 2:
-              //todo
+             tmrpcm.stopPlayback();
+             tmrpcm.play("JFA.wav");
             break;
             case 3:
-              //todo
+             tmrpcm.stopPlayback();
+             tmrpcm.play("8-16-iws.wav");
             break;
             default:
-              //todo
+              tmrpcm.stopPlayback();
             break;
           }
         }
       } 
-      else 
-      {
-        Serial.println("64");
-        xbee.getResponse().getRx64Response(rx64);
-        rssi = rx64.getRssi();
-        Serial.println(rssi);
-      }
     }
+  }
+  if(digitalRead(8) == HIGH && beacon_mode == 1)
+  {
+    format_message_payload(2,0,message_id, beacon_chain);
+    delay(200);
   }
 }
 
@@ -190,7 +184,7 @@ void format_message_payload(int message_type, int hop_number, int message_id,Str
   {
     padded_hop_number = "0"+hop_number;
   } 
-  beacon_chain += beacon_id;
+  beacon_chain += this_beacon;
   String composed_message = String(message_type) + String(hop_number) + String(message_id) + beacon_chain;
   char payload[32];
   composed_message.toCharArray(payload, composed_message.length()+1);
@@ -201,6 +195,7 @@ void format_message_payload(int message_type, int hop_number, int message_id,Str
   xbee.send(tx);
 
 }
+
 
 
 
