@@ -192,7 +192,7 @@ void format_message_payload(int message_type, int hop_number, int message_id,Str
     padded_hop_number = "0"+hop_number;
   } 
   beacon_chain += this_beacon;
-  String composed_message = String(message_type) + String(hop_number) + String(message_id) + beacon_chain;
+  String composed_message = String(message_type) +','+ String(hop_number) +','+ String(message_id) +','+ beacon_chain;
   char payload[32];
   composed_message.toCharArray(payload, composed_message.length()+1);
   Serial.println(payload);
@@ -215,6 +215,7 @@ void microphone_loudness()
   }
   old_sound = val;
 }
+
 
 
 
