@@ -34,7 +34,9 @@ const int newCard = SPI_QUARTER_SPEED;
 int cardType = oldCard;
 unsigned long timeDiff = 0;
 unsigned long timePress = 0;
-
+int  old_sound = 0;
+int sound_delta;
+int is_triggered = false;
 int count = 0;
 int maxnum = 3;
 
@@ -168,11 +170,15 @@ void loop()
       } 
     }
   }
-  if(digitalRead(8) == HIGH && beacon_mode == 1)
-  {
-    format_message_payload(2,0,message_id, beacon_chain);
-    delay(200);
-    beacon_mode==0;
+  if(beacon_mode == 1){
+    microphone_loudness();
+    if(is_triggered)
+    {
+      format_message_payload(2,0,message_id, beacon_chain);
+      delay(200);
+      beacon_mode=0;
+      is_triggered=false;
+    }
   }
 }
 
@@ -195,6 +201,19 @@ void format_message_payload(int message_type, int hop_number, int message_id,Str
   Tx16Request tx = Tx16Request(0x0000, payload_bytes, sizeof(payload_bytes));
   xbee.send(tx);
 
+}
+
+void microphone_loudness()
+{ 
+  analogRead(0);
+  delay(10);
+  int val = analogRead(0);
+  sound_delta = val - old_sound;
+  Serial.println(sound_delta);
+  if(sound_delta > 600){
+    is_triggered = true;
+  }
+  old_sound = val;
 }
 
 
