@@ -143,7 +143,7 @@ void loop()
 
         // Handling various types of messages 
         // Check if you re-received the previous message
-        if(old_message_id != message_id && original_beacon_ID != beacon_chain[1]){
+        if(old_message_id != message_id && original_beacon_ID != beacon_chain[0]){
           switch(message_type){
             case 1:
              beacon_mode = 1;
@@ -172,6 +172,7 @@ void loop()
   {
     format_message_payload(2,0,message_id, beacon_chain);
     delay(200);
+    beacon_mode==0;
   }
 }
 
