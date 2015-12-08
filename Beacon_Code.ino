@@ -170,7 +170,7 @@ void loop()
       } 
     }
   }
-  if(beacon_mode == 1){
+  if(beacon_mode == 1 && tmrpcm.isPlaying() == false){
     microphone_loudness();
     if(is_triggered)
     {
