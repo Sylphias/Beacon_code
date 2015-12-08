@@ -59,7 +59,7 @@ void loop()
   // Initialize Local Variables
   int message_type = 0;
   int hop_number = 0;
-  int message_id = 0;
+  int message_id = 1;
   char beacon_chain[30];
   int lastIndex = 0;
   xbee.readPacket(100);
@@ -116,14 +116,17 @@ void loop()
 
   if(digitalRead(11) == HIGH){
     format_message_payload(1,0,message_id);
+    message_id +=1;
     delay(200);
   }
   if(digitalRead(12) == HIGH){
     format_message_payload(3,0,message_id);
+    message_id +=1;
     delay(200);
   }
   if(digitalRead(13) == HIGH){
     format_message_payload(0,0,message_id);
+    message_id +=1;
     delay(200);
   }
 }
@@ -150,6 +153,7 @@ void format_message_payload(int message_type, int hop_number, int message_id)
   xbee.send(tx);
 
 }
+
 
 
 
