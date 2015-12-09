@@ -121,7 +121,7 @@ void loop()
         // Clear out string and counters to get ready for the next incoming string
         if(message_type == 2){
           lcd.clear();
-          lcd.print("Distress beacon: ");
+          lcd.print("Alert Beacon:");
           lcd.print(beacon_chain[0]);
           lcd.setCursor(0,1);
           lcd.print("Beacons Away:");
@@ -172,7 +172,7 @@ void format_message_payload(int message_type, int hop_number, int message_id)
     padded_hop_number = "0"+hop_number;
   } 
   beacon_chain += this_beacon_ID;
-  String composed_message = String(message_type)+","+ String(hop_number)+","+ String(message_id)+","+ beacon_chain;
+  String composed_message = String(message_type)+","+ String(hop_number)+","+ String(message_id)+","+ beacon_chain +",";
   Serial.println(composed_message);
   char payload[32];
   composed_message.toCharArray(payload, composed_message.length()+1);
@@ -183,24 +183,4 @@ void format_message_payload(int message_type, int hop_number, int message_id)
   xbee.send(tx);
 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
