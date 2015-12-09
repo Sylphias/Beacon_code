@@ -120,6 +120,7 @@ void loop()
         packet_sec[3].toCharArray(beacon_chain, packet_sec[3].length());  
         // Clear out string and counters to get ready for the next incoming string
         if(message_type == 2){
+          lcd.clear();
           lcd.print("Distress beacon: ");
           lcd.print(beacon_chain[0]);
           lcd.setCursor(0,1);
@@ -139,6 +140,7 @@ void loop()
 
   if(digitalRead(11) == HIGH){
     format_message_payload(1,0,message_id);
+    lcd.clear();
     lcd.print("Help Message Sent!");
     lcd.setCursor(0,1);
     lcd.print("Scanning...");
@@ -147,6 +149,7 @@ void loop()
   }
   if(digitalRead(12) == HIGH){
     format_message_payload(3,0,message_id);
+    lcd.clear();
     lcd.print("Broadcast Message Sent");
     message_id +=1;
     delay(200);
@@ -180,6 +183,7 @@ void format_message_payload(int message_type, int hop_number, int message_id)
   xbee.send(tx);
 
 }
+
 
 
 
