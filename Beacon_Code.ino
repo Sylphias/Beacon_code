@@ -1,5 +1,9 @@
 #include <XBee.h>
 #include <SoftwareSerial.h>
+#include <SerialLCD.h>
+#include <LiquidCrystal.h> 
+#include "rgb_lcd.h"
+#include <Wire.h>
 // XBee's DOUT (TX) is connected to pin 1 (Arduino's Software RX)
 // XBee's DIN (RX) is connected to pin 9 (Arduino's Software TX)
 /*
@@ -40,6 +44,15 @@ int old_message_id = 0;
 int original_beacon_ID = 0;
 int this_beacon_ID = 0;
 
+rgb_lcd lcd;
+
+const int colorR = 255;
+const int colorG = 255;
+const int colorB = 0;
+
+
+// initialize the library
+SerialLCD slcd(11,12);//this is a must, assign soft serial pins
 void setup() 
 {
   Serial.begin(9600);
@@ -48,7 +61,11 @@ void setup()
   for (int x = 11; x<13; x++){
     pinMode(x,INPUT);
   }
-
+  lcd.begin(16,2);
+  lcd.setRGB(colorR, colorG, colorB);
+  lcd.print("Press Button To ");
+  lcd.setCursor(0,1);
+  lcd.print("Send Messages");
 }
 
 
@@ -104,9 +121,18 @@ void loop()
         message_type = packet_sec[0].toInt();
         hop_number = packet_sec[1].toInt();
         message_id = packet_sec[2].toInt();
-        Serial.println(message_type);
+    
         packet_sec[3].toCharArray(beacon_chain, packet_sec[3].length());  
         // Clear out string and counters to get ready for the next incoming string
+        lcd.print("Distress beacon: ");
+        lcd.print(beacon_chain[0]);
+        lcd.setCursor(0,1);
+        lcd.print("Beacons Away:");
+        lcd.print(hop_number);
+        Serial.println(message_type);
+        Serial.println(hop_number);
+        Serial.println(message_id);
+        Serial.println(beacon_chain[0]);
         counter = 0;
         lastIndex = 0;
       } 
@@ -153,6 +179,10 @@ void format_message_payload(int message_type, int hop_number, int message_id)
   xbee.send(tx);
 
 }
+
+
+
+
 
 
 
