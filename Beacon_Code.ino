@@ -27,7 +27,7 @@ char mychar;
 File root;
 File entry;
 
-const int this_beacon = 1;
+const int this_beacon = 2;
 const int chipSelect = 10;    
 const int oldCard = SPI_HALF_SPEED;
 const int newCard = SPI_QUARTER_SPEED;
@@ -151,16 +151,15 @@ void loop()
              beacon_mode = 1;
              Serial.print('playing');
              tmrpcm.stopPlayback();
-             tmrpcm.play("8-16-kg.wav"); 
-             format_message_payload(2,0,message_id, beacon_chain);
+             tmrpcm.play("proper1start.wav"); 
+             format_message_payload(2,hop_number,message_id, beacon_chain);
             break;
             case 2:
-             tmrpcm.stopPlayback();
-             tmrpcm.play("JFA.wav");
+             format_message_payload(2,hop_number,message_id, beacon_chain);
             break;
             case 3:
              tmrpcm.stopPlayback();
-             tmrpcm.play("8-16-iws.wav");
+             tmrpcm.play("iws.wav");
             break;
             default:
               tmrpcm.stopPlayback();
@@ -174,6 +173,8 @@ void loop()
     microphone_loudness();
     if(is_triggered)
     {
+      tmrpcm.stopPlayback();
+      tmrpcm.play("proper1end.wav"); 
       format_message_payload(2,0,message_id, beacon_chain);
       delay(200);
       beacon_mode=0;
@@ -210,11 +211,12 @@ void microphone_loudness()
   int val = analogRead(0);
   sound_delta = val - old_sound;
   Serial.println(sound_delta);
-  if(sound_delta > 600){
+  if(sound_delta > 550){
     is_triggered = true;
   }
   old_sound = val;
 }
+
 
 
 
