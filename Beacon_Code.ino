@@ -27,7 +27,7 @@ char mychar;
 File root;
 File entry;
 
-const int this_beacon = 2;
+const int this_beacon = 1;
 const int chipSelect = 10;    
 const int oldCard = SPI_HALF_SPEED;
 const int newCard = SPI_QUARTER_SPEED;
@@ -51,7 +51,6 @@ XBee xbee=XBee();
 XBeeResponse response = XBeeResponse();
 Rx16Response rx16 = Rx16Response();
 Rx64Response rx64 = Rx64Response();
-const int beacon_id = 1 ;
 uint8_t option = 0;
 uint8_t data = 0;
 uint8_t rssi = 0;
@@ -216,6 +215,7 @@ void microphone_loudness()
   }
   old_sound = val;
 }
+
 
 
 
