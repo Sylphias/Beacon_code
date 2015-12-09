@@ -19,12 +19,7 @@
   R) Receiver Chains (Ie addresses of the chips the message has passed through)
   E) End Packet
   Look at CRC Encoding
-  
-
 */
-
-
-
 
 //Xbee SHits
 SoftwareSerial serial1(0, 1); // RX, TX
@@ -124,15 +119,17 @@ void loop()
     
         packet_sec[3].toCharArray(beacon_chain, packet_sec[3].length());  
         // Clear out string and counters to get ready for the next incoming string
-        lcd.print("Distress beacon: ");
-        lcd.print(beacon_chain[0]);
-        lcd.setCursor(0,1);
-        lcd.print("Beacons Away:");
-        lcd.print(hop_number);
-        Serial.println(message_type);
-        Serial.println(hop_number);
-        Serial.println(message_id);
-        Serial.println(beacon_chain[0]);
+        if(message_type == 2){
+          lcd.print("Distress beacon: ");
+          lcd.print(beacon_chain[0]);
+          lcd.setCursor(0,1);
+          lcd.print("Beacons Away:");
+          lcd.print(hop_number);
+          Serial.println(message_type);
+          Serial.println(hop_number);
+          Serial.println(message_id);
+          Serial.println(beacon_chain[0]);
+        }
         counter = 0;
         lastIndex = 0;
       } 
@@ -142,11 +139,15 @@ void loop()
 
   if(digitalRead(11) == HIGH){
     format_message_payload(1,0,message_id);
+    lcd.print("Help Message Sent!");
+    lcd.setCursor(0,1);
+    lcd.print("Scanning...");
     message_id +=1;
     delay(200);
   }
   if(digitalRead(12) == HIGH){
     format_message_payload(3,0,message_id);
+    lcd.print("Broadcast Message Sent");
     message_id +=1;
     delay(200);
   }
@@ -179,6 +180,7 @@ void format_message_payload(int message_type, int hop_number, int message_id)
   xbee.send(tx);
 
 }
+
 
 
 
