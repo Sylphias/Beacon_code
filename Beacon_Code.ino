@@ -84,7 +84,7 @@ void loop()
         xbee.getResponse().getRx16Response(rx16);
         rssi = rx16.getRssi();
         Serial.println(rssi);
-        String packet_sec[4];
+        String packet_sec[5];
         char packet_char[rx16.getDataLength()];
         String packet_input;
         int counter = 0;
