@@ -27,7 +27,7 @@ char mychar;
 File root;
 File entry;
 
-const int this_beacon = 1;
+const int this_beacon = 2;
 const int chipSelect = 10;    
 const int oldCard = SPI_HALF_SPEED;
 const int newCard = SPI_QUARTER_SPEED;
@@ -150,7 +150,7 @@ void loop()
              beacon_mode = 1;
              Serial.print('playing');
              tmrpcm.stopPlayback();
-             tmrpcm.play("proper1start.wav"); 
+             tmrpcm.play("properjapend.wav"); 
              format_message_payload(2,hop_number,message_id, beacon_chain);
             break;
             case 2:
@@ -158,7 +158,7 @@ void loop()
             break;
             case 3:
              tmrpcm.stopPlayback();
-             tmrpcm.play("iws.wav");
+             tmrpcm.play("8-16-iws.wav");
             break;
             default:
               tmrpcm.stopPlayback();
@@ -168,10 +168,14 @@ void loop()
       } 
     }
   }
+  if(digitalRead(8) == HIGH)
+  {
+    is_triggered = true;
+  }
   if(beacon_mode == 1 && tmrpcm.isPlaying() == false){
-    microphone_loudness();
     if(is_triggered)
     {
+      Serial.print("Test");
       tmrpcm.stopPlayback();
       tmrpcm.play("proper1end.wav"); 
       format_message_payload(2,0,message_id, beacon_chain);
@@ -215,6 +219,7 @@ void microphone_loudness()
   }
   old_sound = val;
 }
+
 
 
 
