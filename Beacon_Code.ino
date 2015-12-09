@@ -96,7 +96,7 @@ void loop()
 
         // This method splits up the packet data based off a comma delimiter, not optimised but time constraints....
         packet_input = packet_char;
-
+        Serial.println(packet_input);
         for (int i = 0; i < packet_input.length(); i++) {
               // Loop through each character and check if it's a comma
               if (packet_input.substring(i, i+1) == ",") {
@@ -116,20 +116,18 @@ void loop()
         message_type = packet_sec[0].toInt();
         hop_number = packet_sec[1].toInt();
         message_id = packet_sec[2].toInt();
-    
-        packet_sec[3].toCharArray(beacon_chain, packet_sec[3].length());  
         // Clear out string and counters to get ready for the next incoming string
         if(message_type == 2){
           lcd.clear();
           lcd.print("Alert Beacon:");
-          lcd.print(beacon_chain[0]);
+          lcd.print(packet_sec[3][0]);
           lcd.setCursor(0,1);
           lcd.print("Beacons Away:");
           lcd.print(hop_number);
           Serial.println(message_type);
           Serial.println(hop_number);
           Serial.println(message_id);
-          Serial.println(beacon_chain[0]);
+          Serial.println(packet_sec[3][0]);
         }
         counter = 0;
         lastIndex = 0;
