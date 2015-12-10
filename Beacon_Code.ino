@@ -83,7 +83,6 @@ void loop()
       {
         xbee.getResponse().getRx16Response(rx16);
         rssi = rx16.getRssi();
-        Serial.println(rssi);
         String packet_sec[5];
         char packet_char[rx16.getDataLength()];
         String packet_input;
@@ -96,7 +95,6 @@ void loop()
 
         // This method splits up the packet data based off a comma delimiter, not optimised but time constraints....
         packet_input = packet_char;
-        Serial.println(packet_input);
         for (int i = 0; i < packet_input.length(); i++) {
               // Loop through each character and check if it's a comma
               if (packet_input.substring(i, i+1) == ",") {
@@ -134,8 +132,8 @@ void loop()
       } 
     }
   }
-
-
+  Serial.println(digitalRead(11) == HIGH);
+  
   if(digitalRead(11) == HIGH){
     format_message_payload(1,0,message_id);
     lcd.clear();
@@ -171,10 +169,8 @@ void format_message_payload(int message_type, int hop_number, int message_id)
   } 
   beacon_chain += this_beacon_ID;
   String composed_message = String(message_type)+","+ String(hop_number)+","+ String(message_id)+","+ beacon_chain +",";
-  Serial.println(composed_message);
   char payload[32];
   composed_message.toCharArray(payload, composed_message.length()+1);
-  Serial.println(payload);
   uint8_t payload_bytes[32] = {};
   memcpy((uint8_t*)payload_bytes,(char*)payload, 32);
   Tx16Request tx = Tx16Request(0x0000, payload_bytes, sizeof(payload_bytes));
